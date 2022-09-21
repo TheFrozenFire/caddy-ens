@@ -26,19 +26,19 @@ type EnsClient struct{
 }
 
 func init() {
-	caddy.RegisterModule(EnsClient{})
+    caddy.RegisterModule(EnsClient{})
 }
 
 // CaddyModule returns the Caddy module information.
 func (EnsClient) CaddyModule() caddy.ModuleInfo {
-	return caddy.ModuleInfo{
-		ID: "ens",
-		New: func() caddy.Module { return new(EnsClient) },
-	}
+    return caddy.ModuleInfo{
+        ID: "ens",
+        New: func() caddy.Module { return new(EnsClient) },
+    }
 }
 
 func (c *EnsClient) Provision(ctx caddy.Context) error {
-	c.logger = ctx.Logger()
+    c.logger = ctx.Logger()
 }
 
 //  caddy-ens {
@@ -46,29 +46,29 @@ func (c *EnsClient) Provision(ctx caddy.Context) error {
 //  }
 func (c *EnsClient) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
     for d.Next() {
-		if d.NextArg() {
-			return d.ArgErr()
-		}
-		
-		for nesting := d.Nesting(); d.NextBlock(nesting); {
-		    switch d.Val() {
-		    case "eth_rpc_endpoint":
-		        if d.NextArg() {
-					c.client, err = ethclient.Dial(d.Val())
-					if err != nil {
-		                panic(err)
-	                }
-				}
-				if d.NextArg() {
-					return d.ArgErr()
-				}
-		    default:
-				return d.Errf("unrecognized subdirective '%s'", d.Val())
-			}
-		}
-	}
+        if d.NextArg() {
+            return d.ArgErr()
+        }
+        
+        for nesting := d.Nesting(); d.NextBlock(nesting); {
+            switch d.Val() {
+            case "eth_rpc_endpoint":
+                if d.NextArg() {
+                    c.client, err = ethclient.Dial(d.Val())
+                    if err != nil {
+                        panic(err)
+                    }
+                }
+                if d.NextArg() {
+                    return d.ArgErr()
+                }
+            default:
+                return d.Errf("unrecognized subdirective '%s'", d.Val())
+            }
+        }
+    }
 
-	return nil
+    return nil
 }
 
 func (c *EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
@@ -78,37 +78,37 @@ func (c *EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
     }
     
     logger.Debug("ENS domain resolver found",
-	    zap.String("domain", resolver.domain),
-	    zap.ByteString("resolver", ContractAddr)
-	)
-	
-	headers := w.Header()
-	
-	for _, attributeName := range c.Attributes {
-	    attributeName = strings.ToLower(attributeName)
-	    
-	    switch attributeName {
-	    case "address":
-	        address, err := resolver.Address()
-	        if err != nil {
-		        panic(err)
-	        }
-	        
-	        logger.Debug("ENS domain address found",
-	            zap.String("domain", resolver.domain),
-	            zap.ByteString("address", address)
+        zap.String("domain", resolver.domain),
+        zap.ByteString("resolver", ContractAddr)
+    )
+    
+    headers := w.Header()
+    
+    for _, attributeName := range c.Attributes {
+        attributeName = strings.ToLower(attributeName)
+        
+        switch attributeName {
+        case "address":
+            address, err := resolver.Address()
+            if err != nil {
+                panic(err)
+            }
+            
+            logger.Debug("ENS domain address found",
+                zap.String("domain", resolver.domain),
+                zap.ByteString("address", address)
             )
             
             headers.Set("X-ENS-Address", hex.EncodeToString(address))
-	    case "contenthash":
-	        contentHash, err := resolver.Contenthash()
+        case "contenthash":
+            contentHash, err := resolver.Contenthash()
             if err != nil {
-		        panic(err)
-	        }
-	        
-	        logger.Debug("ENS domain content hash found",
-	            zap.String("domain", resolver.domain),
-	            zap.ByteString("contentHash", contentHash)
+                panic(err)
+            }
+            
+            logger.Debug("ENS domain content hash found",
+                zap.String("domain", resolver.domain),
+                zap.ByteString("contentHash", contentHash)
             )
             
             cH_address, cH_codec, err := multicodec.RemoveCodec(contentHash)
@@ -119,12 +119,12 @@ func (c *EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
         
         default:
             return fmt.Errorf("unrecognized ENS attribute '%s'", attributeName)
-	    }
-	}
+        }
+    }
 
     
-	
-	return next.ServeHTTP(w, r)
+    
+    return next.ServeHTTP(w, r)
 }
 
 var (
