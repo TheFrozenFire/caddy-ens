@@ -79,7 +79,7 @@ func (c *EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
     
     logger.Debug("ENS domain resolver found",
         zap.String("domain", resolver.domain),
-        zap.ByteString("resolver", ContractAddr)
+        zap.ByteString("resolver", resolver.ContractAddr)
     )
     
     headers := w.Header()
