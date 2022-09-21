@@ -1,3 +1,3 @@
-module ethlimo/caddy-ens
+module thefrozenfire/caddy-ens
 
 go 1.16
