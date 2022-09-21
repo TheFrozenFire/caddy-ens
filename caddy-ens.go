@@ -1,4 +1,4 @@
-package caddy-ens
+package caddyens
 
 import (
     "strings"
