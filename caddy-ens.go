@@ -4,6 +4,8 @@ import (
     "strings"
     "net/http"
     "encoding/hex"
+    "strconv"
+    "fmt"
 
     "github.com/ethereum/go-ethereum/ethclient"
     ens "github.com/wealdtech/go-ens/v3"
@@ -38,7 +40,9 @@ func (EnsClient) CaddyModule() caddy.ModuleInfo {
 }
 
 func (c *EnsClient) Provision(ctx caddy.Context) error {
-    c.logger = ctx.Logger()
+    c.logger = ctx.Logger(c)
+    
+    return nil
 }
 
 //  caddy-ens {
@@ -54,10 +58,11 @@ func (c *EnsClient) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
             switch d.Val() {
             case "eth_rpc_endpoint":
                 if d.NextArg() {
-                    c.client, err = ethclient.Dial(d.Val())
+                    client, err := ethclient.Dial(d.Val())
                     if err != nil {
                         panic(err)
                     }
+                    c.client = client
                 }
                 if d.NextArg() {
                     return d.ArgErr()
@@ -72,15 +77,12 @@ func (c *EnsClient) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 }
 
 func (c *EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-    resolver, err := ens.NewResolver(client, c.Domain)
+    resolver, err := ens.NewResolver(c.client, c.Domain)
     if err != nil  {
         panic(err)
     }
     
-    logger.Debug("ENS domain resolver found",
-        zap.String("domain", resolver.domain),
-        zap.ByteString("resolver", resolver.ContractAddr)
-    )
+    c.logger.Debug("ENS domain resolver found", zap.String("domain", c.Domain), zap.ByteString("resolver", resolver.ContractAddr.Bytes()) )
     
     headers := w.Header()
     
@@ -94,27 +96,21 @@ func (c *EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
                 panic(err)
             }
             
-            logger.Debug("ENS domain address found",
-                zap.String("domain", resolver.domain),
-                zap.ByteString("address", address)
-            )
+            c.logger.Debug("ENS domain address found", zap.String("domain", c.Domain), zap.String("address", address.String()) )
             
-            headers.Set("X-ENS-Address", hex.EncodeToString(address))
+            headers.Set("X-ENS-Address", address.String())
         case "contenthash":
             contentHash, err := resolver.Contenthash()
             if err != nil {
                 panic(err)
             }
             
-            logger.Debug("ENS domain content hash found",
-                zap.String("domain", resolver.domain),
-                zap.ByteString("contentHash", contentHash)
-            )
+            c.logger.Debug("ENS domain content hash found", zap.String("domain", c.Domain), zap.ByteString("contentHash", contentHash) )
             
             cH_address, cH_codec, err := multicodec.RemoveCodec(contentHash)
             
             headers.Set("X-ENS-Contenthash", hex.EncodeToString(contentHash))
-            headers.Set("X-ENS-Contenthash-Codec", hex.EncodeToString(cH_codec))
+            headers.Set("X-ENS-Contenthash-Codec", strconv.FormatUint(uint64(cH_codec), 10))
             headers.Set("X-ENS-Contenthash-Address", hex.EncodeToString(cH_address))
         
         default:
