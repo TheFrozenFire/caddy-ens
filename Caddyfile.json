@@ -9,7 +9,7 @@
                             "handle": [
                                 {
                                     "handler": "ens",
-                                    "eth_rpc_endpoint": "https://endpoints.omniatech.io/v1/eth/mainnet/099e14f5b4584c979ade9fa8a3562e54",
+                                    "eth_rpc_endpoint": "{env.ETH_RPC_ENDPOINT}",
                                     "domain": "frozenfire.eth",
                                     "attributes": [ "address", "contenthash", "public_key", "resolver_address" ]
                                 }

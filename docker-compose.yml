@@ -2,6 +2,8 @@ services:
     caddy-ens:
         image: caddy-ens
         command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.json"]
+        environment:
+          - ETH_RPC_ENDPOINT=${ETH_RPC_ENDPOINT}
         volumes:
           - ./Caddyfile.json:/etc/caddy/Caddyfile.json:z
           - type: tmpfs

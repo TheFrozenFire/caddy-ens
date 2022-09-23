@@ -25,7 +25,6 @@ type EnsClient struct{
     
     Attributes []string `json:"attributes,omitempty"`
 
-    client *ethclient.Client
     logger *zap.Logger
 }
 
@@ -43,12 +42,6 @@ func (EnsClient) CaddyModule() caddy.ModuleInfo {
 
 func (c *EnsClient) Provision(ctx caddy.Context) error {
     c.logger = ctx.Logger(c)
-    
-    client, err := ethclient.Dial(c.EthRpcEndpoint)
-    if err != nil {
-        panic(err)
-    }
-    c.client = client
     
     return nil
 }
@@ -84,12 +77,21 @@ func decodeContentHash(contentHash []byte) (string, string, error) {
 }
 
 func (c EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-    resolver, err := ens.NewResolver(c.client, c.Domain)
+    repl := r.Context().Value(caddy.ReplacerCtxKey).(*caddy.Replacer)
+    
+    client, err := ethclient.Dial(repl.ReplaceAll(c.EthRpcEndpoint, ""))
+    if err != nil {
+        panic(err)
+    }
+
+    domain := repl.ReplaceAll(c.Domain, "")
+
+    resolver, err := ens.NewResolver(client, domain)
     if err != nil  {
         panic(err)
     }
     
-    c.logger.Debug("ENS domain resolver found", zap.String("domain", c.Domain), zap.String("resolver", resolver.ContractAddr.String()) )
+    c.logger.Debug("ENS domain resolver found", zap.String("domain", domain), zap.String("resolver", resolver.ContractAddr.String()) )
     
     headers := w.Header()
     
@@ -138,8 +140,6 @@ func (c EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyh
             return fmt.Errorf("unrecognized ENS attribute '%s'", attributeName)
         }
     }
-
-    
     
     return next.ServeHTTP(w, r)
 }
