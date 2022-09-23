@@ -1,0 +1,8 @@
+services:
+    caddy-ens:
+        image: caddy-ens
+        command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.json"]
+        volumes:
+          - ./Caddyfile.json:/etc/caddy/Caddyfile.json:z
+          - type: tmpfs
+            target: /tmp

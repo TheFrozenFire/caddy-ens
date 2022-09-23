@@ -1,0 +1,30 @@
+{
+    "apps": {
+        "http": {
+            "servers": {
+                "test": {
+                    "listen": [":80"],
+                    "routes": [
+                        {
+                            "handle": [
+                                {
+                                    "handler": "ens",
+                                    "eth_rpc_endpoint": "https://endpoints.omniatech.io/v1/eth/mainnet/099e14f5b4584c979ade9fa8a3562e54",
+                                    "domain": "frozenfire.eth",
+                                    "attributes": [ "address", "contenthash", "public_key", "resolver_address" ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "logging": {
+        "logs": {
+            "default": {
+                "level": "DEBUG"
+            }
+        }
+    }
+}
