@@ -46,7 +46,7 @@ func (c *EnsClient) Provision(ctx caddy.Context) error {
     return nil
 }
 
-func decodeContentHash(contentHash []byte) (string, string, error) {
+func (c *EnsClient) decodeContentHash(contentHash []byte) (string, string, error) {
     address_data, codec, err := multicodec.RemoveCodec(contentHash)
     
     if err != nil {
@@ -60,15 +60,16 @@ func decodeContentHash(contentHash []byte) (string, string, error) {
     }
     
     switch(codec_name) {
-    case "ipfs-ns":
-    case "ipns-ns":
+    case "ipfs-ns", "ipns-ns":
         cid, err := cid.Cast(address_data)
         
         if err != nil {
             return codec_name, "", err
         }
-        
+                
         address := cid.String()
+        
+        c.logger.Debug("IPFS CID decoded", zap.String("CID", address))
         return codec_name, address, nil
     }
     
@@ -105,7 +106,7 @@ func (c EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyh
                 panic(err)
             }
             
-            c.logger.Debug("ENS domain address found", zap.String("domain", c.Domain), zap.String("address", address.String()) )
+            c.logger.Debug("ENS domain address found", zap.String("domain", domain), zap.String("address", address.String()) )
             
             headers.Set("X-ENS-Address", address.String())
         case "contenthash":
@@ -114,9 +115,9 @@ func (c EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyh
                 panic(err)
             }
             
-            c.logger.Debug("ENS domain content hash found", zap.String("domain", c.Domain), zap.String("contentHash", hex.EncodeToString(contentHash)) )
+            c.logger.Debug("ENS domain content hash found", zap.String("domain", domain), zap.String("contentHash", hex.EncodeToString(contentHash)) )
             
-            codec, address, err := decodeContentHash(contentHash)
+            codec, address, err := c.decodeContentHash(contentHash)
             if err != nil {
                 panic(err)
             }
