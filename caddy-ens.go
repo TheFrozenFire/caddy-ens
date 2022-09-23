@@ -117,14 +117,13 @@ func (c EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyh
             
             c.logger.Debug("ENS domain content hash found", zap.String("domain", domain), zap.String("contentHash", hex.EncodeToString(contentHash)) )
             
-            codec, address, err := c.decodeContentHash(contentHash)
-            if err != nil {
-                panic(err)
-            }
-            
             headers.Set("X-ENS-Contenthash", hex.EncodeToString(contentHash))
-            headers.Set("X-ENS-Contenthash-Codec", codec)
-            headers.Set("X-ENS-Contenthash-Address", address)
+            
+            codec, address, err := c.decodeContentHash(contentHash)
+            if err == nil {
+                headers.Set("X-ENS-Contenthash-Codec", codec)
+                headers.Set("X-ENS-Contenthash-Address", address)
+            }
         case "public_key":
             pubKey_x, pubKey_y, err := resolver.PubKey()
             if err != nil {
