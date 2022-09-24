@@ -120,10 +120,8 @@ func (c EnsClient) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyh
             headers.Set("X-ENS-Contenthash", hex.EncodeToString(contentHash))
             
             codec, address, err := c.decodeContentHash(contentHash)
-            if err == nil {
-                headers.Set("X-ENS-Contenthash-Codec", codec)
-                headers.Set("X-ENS-Contenthash-Address", address)
-            }
+            headers.Set("X-ENS-Contenthash-Codec", codec)
+            headers.Set("X-ENS-Contenthash-Address", address)
         case "public_key":
             pubKey_x, pubKey_y, err := resolver.PubKey()
             if err != nil {
