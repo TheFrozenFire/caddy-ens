@@ -10,7 +10,7 @@
                                 {
                                     "handler": "ens",
                                     "eth_rpc_endpoint": "{env.ETH_RPC_ENDPOINT}",
-                                    "domain": "frozenfire.eth",
+                                    "domain": "offchainexample.eth",
                                     "attributes": [ "address", "contenthash", "public_key", "resolver_address" ]
                                 }
                             ]

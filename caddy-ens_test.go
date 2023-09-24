@@ -12,7 +12,7 @@ import (
 )
 
 func TestHandler(t *testing.T) {
-    var rpc_endpoint := os.Getenv("ETH_RPC_ENDPOINT")
+    rpc_endpoint := os.Getenv("ETH_RPC_ENDPOINT")
 
 	for i, tc := range []struct {
 		handler Handler
